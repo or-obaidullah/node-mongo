@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node mongo express</title>
+</head>
+<body>
+    <h1>Node Mongo Express</h1>
+    <!-- create start -->
+    <form action="/addStudent" method="POST">
+        <input type="text" name="name" id="" placeholder="Enter Your name">
+        <input type="text" name="age" id="" placeholder="Enter Your age">
+        <input type="text" name="cgpa" id="" placeholder="Enter Your cgpa">
+        <input type="submit" value="send">
+    </form>
+    <!-- create start -->
+
+
+    <div id="students"></div>
+    <div id="update"></div>
+
+    <script>
+        //read
+        const loadAllStudent = () => {
+            fetch('/allStudent')
+            .then(res => res.json())
+            .then(result => {
+                const students = document.getElementById('students');
+                students.innerHTML = '';
+                result.forEach(st => {
+                    const p = document.createElement('p');
+                    p.innerHTML=`<strong>name:</Strong> ${st.name} 
+                        <strong>age:</Strong> ${st.age} 
+                        <strong>cgpa:</Strong> ${st.cgpa}
+                        <button onclick = "loadSingleOne('${st._id}')" >update</button>
+                        <button onclick= "deleteStudent(event,'${st._id}')" >delete</button>`
+                    students.appendChild(p);
+                });
+            })
+        }
+        loadAllStudent()
+
+        //Update start
+        //
+        const loadSingleOne = (id) => {
+            fetch(`/student/${id}`)
+            .then(res => res.json())
+            .then(result => {
+                const update = document.getElementById('update');
+                update.innerHTML = `
+                    <h3>id: ${result._id}<h3>
+                    <input type='text' value='${result.name}' id="s-name" placeholder="Update name">
+                    <input type='text' value='${result.age}' id="s-age" placeholder="Update age">
+                    <input type='text' value='${result.cgpa}' id="s-cgpa" placeholder="Update cgpa">
+                    <button onclick ="updateStudentInfo('${result._id}')">confirm update</button>
+                    `
+            })
+        }
+        const updateStudentInfo = (id) => {
+            const name = document.getElementById('s-name').value;
+            const age = document.getElementById('s-age').value;
+            const cgpa = document.getElementById('s-cgpa').value;
+            const student = {name, age, cgpa}
+            fetch(`/updateInfo/${id}`, {
+                method: 'PATCH',
+                headers: {'Content-type': 'application/json; charset=UTF-8'},
+                body: JSON.stringify(student)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if(result){
+                    loadAllStudent();
+                    const update = document.getElementById('update');
+                    update.innerHTML = '';
+                }
+            })
+        }
+        //Update and
+
+
+        //delete
+        const deleteStudent = (event, id) => {
+            fetch(`/delete/${id}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(result => {
+                if(result){
+                    event.target.parentNode.style.display = 'none';
+                }
+            })
+        }
+    </script>
+</body>
+</html>
